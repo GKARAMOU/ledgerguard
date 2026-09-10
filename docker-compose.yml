@@ -1,0 +1,45 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ledgerguard}
+      POSTGRES_USER: ${POSTGRES_USER:-ledgerguard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ledgerguard}
+    volumes:
+      - ledgerguard-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ledgerguard} -d ${POSTGRES_DB:-ledgerguard}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: jdbc:postgresql://database:5432/${POSTGRES_DB:-ledgerguard}
+      POSTGRES_USER: ${POSTGRES_USER:-ledgerguard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ledgerguard}
+      JWT_SECRET: ${JWT_SECRET:-bGVkZ2VyZ3VhcmQtbG9jYWwtZGVtby1zZWNyZXQta2V5LTIwMjYtMDE=}
+      DEMO_USERNAME: ${DEMO_USERNAME:-demo}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-ledgerguard}
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  dashboard:
+    build: .
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  ledgerguard-data:
