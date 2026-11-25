@@ -14,7 +14,6 @@ import {
   RefreshCcw,
   Search,
   Send,
-  Settings,
   ShieldCheck,
   WalletCards,
   X,
@@ -79,6 +78,7 @@ function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [transferOpen, setTransferOpen] = useState(false)
   const [notice, setNotice] = useState('')
+  const [query, setQuery] = useState('')
   const [fromId, setFromId] = useState(initialWallets[0].id)
   const [toId, setToId] = useState(initialWallets[1].id)
   const [amount, setAmount] = useState('')
@@ -210,7 +210,7 @@ function App() {
         </div>
         <button className="nav-item reset-button" onClick={resetDemo}><RefreshCcw /> Reset data</button>
         <a className="nav-item" href="https://github.com/GKARAMOU/ledgerguard" target="_blank" rel="noreferrer"><Github /> View source</a>
-        <button className="nav-item settings-button" type="button"><Settings /> Settings</button>
+        
       </aside>
 
       {mobileNavOpen && <button className="nav-backdrop" onClick={() => setMobileNavOpen(false)} aria-label="Close navigation" />}
@@ -226,11 +226,11 @@ function App() {
             <label className="search-box">
               <Search size={18} />
               <span className="sr-only">Search transactions</span>
-              <input type="search" placeholder="Search transactions" />
+              <input type="search" placeholder="Search transactions" value={query} onChange={(event) => setQuery(event.target.value)} />
               <kbd>⌘ K</kbd>
             </label>
             <div className="environment"><span /> Demo environment <ChevronDown size={15} /></div>
-            <button className="avatar" type="button" aria-label="Account menu">GK</button>
+            <span className="avatar" aria-label="Demo account">GK</span>
           </div>
         </header>
 
@@ -254,7 +254,7 @@ function App() {
           <section id="wallets" className="section-block">
             <div className="section-heading">
               <div><span className="section-label">ACTIVE ACCOUNTS</span><h2>Your wallets</h2></div>
-              <button className="text-button" type="button">Manage wallets <ArrowRight size={16} /></button>
+              
             </div>
             <div className="wallet-grid">
               {wallets.map((wallet) => (
@@ -271,11 +271,11 @@ function App() {
           <section id="activity" className="section-block activity-block">
             <div className="section-heading">
               <div><span className="section-label">AUDIT TRAIL</span><h2>Recent activity</h2></div>
-              <button className="filter-button" type="button">All transactions <ChevronDown size={16} /></button>
+              <span>Recent transactions</span>
             </div>
             <div className="transaction-list">
               <div className="transaction-row transaction-head"><span>Transaction</span><span>Reference</span><span>Date</span><span>Status</span><span>Amount</span></div>
-              {transactions.slice(0, 6).map((transaction) => (
+              {transactions.filter((transaction) => `${transaction.title} ${transaction.reference} ${transaction.id}`.toLowerCase().includes(query.toLowerCase())).slice(0, 6).map((transaction) => (
                 <div className="transaction-row" key={transaction.id}>
                   <div className="transaction-title">
                     <span className={`transaction-icon ${transaction.type}`}>
